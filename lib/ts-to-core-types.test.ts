@@ -74,6 +74,67 @@ describe("objects", () => {
   });
 });
 
+describe("enums", () => {
+  it("basic enums", () => {
+    const coreTypes = convertTypeScriptToCoreTypes(`
+    export enum Foo {
+		  A,
+		  B,
+      C,
+	  }
+	`).data.types;
+
+    equal(coreTypes, [
+      {
+        name: "Foo",
+        title: "Foo",
+        type: "integer",
+        enum: [0, 1, 2],
+      },
+    ]);
+  });
+
+  it("enums with set discriminant", () => {
+    const coreTypes = convertTypeScriptToCoreTypes(`
+    export enum Foo {
+		  A="A",
+		  B=1,
+      C="c",
+	  }
+	`).data.types;
+
+    equal(coreTypes, [
+      {
+        name: "Foo",
+        title: "Foo",
+        type: "integer",
+        // @ts-ignore
+        enum: ["A", 1, "c"],
+      },
+    ]);
+  });
+
+  it("enums with set and nonset discriminant", () => {
+    const coreTypes = convertTypeScriptToCoreTypes(`
+      export enum Foo {
+        A
+        B
+        C=1,
+      }
+	`).data.types;
+
+    equal(coreTypes, [
+      {
+        name: "Foo",
+        title: "Foo",
+        type: "integer",
+        // @ts-ignore
+        enum: [0, 1, 1],
+      },
+    ]);
+  });
+});
+
 it("basic interface with additional properties", () => {
   const coreTypes = convertTypeScriptToCoreTypes(`
 	export interface Foo {

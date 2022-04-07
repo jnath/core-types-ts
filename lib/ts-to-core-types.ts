@@ -25,7 +25,10 @@ import { decorateNode } from "./ts-annotations";
 
 const anyType: AnyType = { type: "any" };
 
-type TopLevelDeclaration = ts.TypeAliasDeclaration | ts.InterfaceDeclaration;
+type TopLevelDeclaration =
+  | ts.TypeAliasDeclaration
+  | ts.InterfaceDeclaration
+  | ts.EnumDeclaration;
 
 interface TopLevelEntry {
   declaration: TopLevelDeclaration;
@@ -76,7 +79,8 @@ export function convertTypeScriptToCoreTypes(
   const declarations = sourceFile.statements.filter(
     (statement): statement is TopLevelDeclaration =>
       ts.isTypeAliasDeclaration(statement) ||
-      ts.isInterfaceDeclaration(statement)
+      ts.isInterfaceDeclaration(statement) ||
+      ts.isEnumDeclaration(statement)
   );
 
   const ctx: Context = {
@@ -196,11 +200,72 @@ function fromTsTopLevelNode(
       ...fromTsObjectMembers(node, ctx),
       ...decorateNode(node),
     };
+  } else if (ts.isEnumDeclaration(node)) {
+    // @ts-ignore
+    return {
+      name: node.name.getText(),
+      title: node.name.getText(),
+
+      ...fromTsEnumNode(node, ctx),
+      ...decorateNode(node),
+    };
   } else throw new Error("Internal error");
 }
 
 function isOptionalProperty(node: ts.PropertySignature) {
   return node.questionToken?.kind === ts.SyntaxKind.QuestionToken;
+}
+
+function fromTsLiteralNode(node: ts.Expression, ctx: Context) {
+  if (ts.isLiteralExpression(node)) {
+    if (ts.isNumericLiteral(node)) {
+      return Number(node.text);
+    } else if (ts.isStringLiteral(node)) {
+      return node.text;
+    } else {
+      return ctx.handleError(
+        ctx.getUnsupportedError(
+          `Unsupported enum literal kind=${node.kind}`,
+          node
+        )
+      );
+    }
+  } else {
+    return ctx.handleError(
+      ctx.getUnsupportedError(
+        `Unsupported enum literal kind=${node.kind}`,
+        node
+      )
+    );
+  }
+}
+
+function fromTsEnumNode(node: ts.EnumDeclaration, ctx: Context) {
+  //@TODO Generate different code depending on if openapi v3 or v3.1
+  let enumDiscriminant = 0;
+
+  const members: any[] = [];
+
+  node.members.forEach((member) => {
+    if (ts.isEnumMember(member)) {
+      if (member.initializer) {
+        const init = fromTsLiteralNode(member.initializer, ctx);
+
+        if (init) {
+          members.push(init);
+        }
+      } else {
+        members.push(enumDiscriminant);
+      }
+
+      enumDiscriminant += 1;
+    }
+  });
+
+  return {
+    type: "integer",
+    enum: members,
+  };
 }
 
 function fromTsObjectMembers(
