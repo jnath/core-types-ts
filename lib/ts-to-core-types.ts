@@ -241,7 +241,7 @@ function fromTsLiteralNode(node: ts.Expression, ctx: Context) {
 }
 
 function fromTsEnumNode(node: ts.EnumDeclaration, ctx: Context) {
-  //@TODO Generate different code depending on if openapi v3 or v3.1
+  // @TODO Generate different code depending on if openapi v3 or v3.1
   let enumDiscriminant = 0;
 
   const members: any[] = [];
