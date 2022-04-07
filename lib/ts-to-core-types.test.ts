@@ -754,7 +754,7 @@ describe("comments", () => {
 });
 
 describe("unsupported", () => {
-  it("should warn on non-string index", () => {
+  it("should warn on non-string or number index", () => {
     const warn = jest.fn();
     const coreTypes = convertTypeScriptToCoreTypes(
       `

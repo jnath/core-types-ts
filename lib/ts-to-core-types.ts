@@ -224,7 +224,10 @@ function fromTsObjectMembers(
       };
     } else if (ts.isIndexSignatureDeclaration(member)) {
       const param = member.parameters[0];
-      if (param.type?.kind !== ts.SyntaxKind.StringKeyword) {
+      if (
+        param.type?.kind !== ts.SyntaxKind.StringKeyword &&
+        param.type?.kind !== ts.SyntaxKind.NumberKeyword
+      ) {
         ctx.options.warn(`Will not convert non-string index signature`, {
           blob: param,
           loc: toLocation(param),
@@ -281,6 +284,8 @@ function fromTsTypeNode(node: ts.TypeNode, ctx: Context): NodeType | undefined {
     return { type: "number", ...decorateNode(node) };
   else if (node.kind === ts.SyntaxKind.BooleanKeyword)
     return { type: "boolean", ...decorateNode(node) };
+  else if (node.kind === ts.SyntaxKind.UndefinedKeyword)
+    return { type: "null", ...decorateNode(node) };
   else if (node.kind === ts.SyntaxKind.ObjectKeyword)
     return {
       type: "object",
@@ -387,13 +392,11 @@ function fromTsTypeNode(node: ts.TypeNode, ctx: Context): NodeType | undefined {
       ...fromTsObjectMembers(node, ctx),
       ...decorateNode(node),
     };
-  } else if (node.kind === ts.SyntaxKind.UndefinedKeyword)
-    return { type: "null", ...decorateNode(node) };
-  {
-    return ctx.handleError(
-      ctx.getUnsupportedError(`Unimplemented type (kind=${node.kind})`, node)
-    );
   }
+
+  return ctx.handleError(
+    ctx.getUnsupportedError(`Unimplemented type (kind=${node.kind})`, node)
+  );
 }
 
 function fromTsTuple(
