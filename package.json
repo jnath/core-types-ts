@@ -1,8 +1,8 @@
 {
-  "name": "core-types-ts",
-  "version": "0.0.0-development",
+  "name": "@lapz/core-types-ts",
+  "version": "1.5.1",
   "description": "core-types ⬌ TypeScript interface conversion",
-  "author": "Gustaf Räntilä",
+  "author": "Lenard Pratt",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/grantila/core-types-ts/issues"
@@ -10,7 +10,9 @@
   "homepage": "https://github.com/grantila/core-types-ts#readme",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "directories": {},
+  "directories": {
+    "lib": "lib"
+  },
   "engines": {
     "node": ">=12"
   },
@@ -18,13 +20,13 @@
     "dist"
   ],
   "scripts": {
-    "build": "./node_modules/.bin/rimraf dist && ./node_modules/.bin/tsc -p tsconfig.prod.json",
-    "test": "node_modules/.bin/jest --coverage",
+    "build": "rimraf dist && ./node_modules/.bin/tsc -p tsconfig.prod.json",
+    "test": "jest --coverage",
     "cz": "git-cz"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/grantila/core-types-ts"
+    "url": "git+https://github.com/grantila/core-types-ts.git"
   },
   "keywords": [
     "type",
