@@ -263,7 +263,7 @@ function fromTsEnumNode(node: ts.EnumDeclaration, ctx: Context) {
   });
 
   return {
-    type: "integer",
+    type: "any",
     enum: members,
   };
 }
